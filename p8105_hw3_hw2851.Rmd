@@ -70,7 +70,7 @@ instacart %>%
   knitr::kable(digits = 1)
 ```
 ## Problem 2
-```{r setup, include=FALSE}
+```{r, include=FALSE}
 library("tidyverse")
 library(p8105.datasets)
 data("brfss_smart2010")
@@ -90,20 +90,23 @@ brfss_smart2010_clean
 ```
 
 ```{r}
-brfss_smart2010_clean %>%
+observed2002=
+ brfss_smart2010_clean %>%
   filter(year == 2002) %>%
   group_by(locationabbr) %>%
   summarize(n_locations = n_distinct(locationdesc)) %>%
   filter(n_locations >= 7)
 ```
-
+In 2002, there are 6 states that observed at 7 more locations including `r unique(observed2002$locationabbr)`
 ```{r}
-brfss_smart2010_clean %>%
+observed2010=
+ brfss_smart2010_clean %>%
   filter(year == 2010) %>%
   group_by(locationabbr) %>%
   summarize(n_locations = n_distinct(locationdesc)) %>%
   filter(n_locations >= 7)
 ```
+In 2010, there are 14 states that observed at 7 more locations including `r unique(observed2010$locationabbr)`
 
 ```{r}
 brfss_smart2010_clean %>%
@@ -125,7 +128,24 @@ brfss_smart2010_clean %>%
 ```
 
 ## Problem 3
+
 ```{r}
-accel_data = read_csv('./data/accel_data.csv')
-accel_data
+accel_data = read_csv('./data/accel_data.csv') %>%
+  mutate(is_weekend = (day == c("Saturday", "Sunday"))) %>%
+  pivot_longer(activity.1:activity.1440, names_to = "minute_of_day", names_prefix = "activity.", values_to = "activity_count")
+```
+```{r}
+accel_data %>%
+  group_by(day_id) %>%
+  summarize(total_activity = sum(activity_count)) %>%
+  knitr::kable()
+```
+
+```{r}
+accel_data %>%
+  group_by(day_id, day) %>%
+  summarize(total_activity = sum(activity_count)) %>%
+  ggplot(aes(x = day_id, y = total_activity)) +
+  geom_point(aes(color = day)) +
+  geom_line(alpha = .5)
 ```
