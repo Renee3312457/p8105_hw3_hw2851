@@ -70,5 +70,62 @@ instacart %>%
   knitr::kable(digits = 1)
 ```
 ## Problem 2
+```{r setup, include=FALSE}
+library("tidyverse")
+library(p8105.datasets)
+data("brfss_smart2010")
+```
+
+```{r}
+brfss_smart2010_clean =
+brfss_smart2010 %>%
+  # clean column names
+  janitor::clean_names() %>%
+  # only take "Overall Health" topic
+  filter(topic == "Overall Health") %>%
+  # make response a factor
+  mutate(response = forcats::fct_relevel(response, c("Poor", "Fair", "Good", "Very good", "Excellent"))) %>%
+  arrange(response)
+brfss_smart2010_clean
+```
+
+```{r}
+brfss_smart2010_clean %>%
+  filter(year == 2002) %>%
+  group_by(locationabbr) %>%
+  summarize(n_locations = n_distinct(locationdesc)) %>%
+  filter(n_locations >= 7)
+```
+
+```{r}
+brfss_smart2010_clean %>%
+  filter(year == 2010) %>%
+  group_by(locationabbr) %>%
+  summarize(n_locations = n_distinct(locationdesc)) %>%
+  filter(n_locations >= 7)
+```
+
+```{r}
+brfss_smart2010_clean %>%
+  filter(response=="Excellent") %>%
+  select(year, locationabbr, data_value) %>%
+  group_by(year, locationabbr) %>%
+  summarize(mean_data_value = mean(data_value)) %>%
+  ggplot(aes(x = year, y = mean_data_value, color = locationabbr)) +
+    geom_line()
+```
+
+```{r}
+brfss_smart2010_clean %>%
+  filter(locationabbr == "NY", year == c(2006, 2010)) %>%
+  ggplot(aes(x = response, y = data_value)) +
+  geom_violin(aes(fill = response), alpha = .5) +
+  facet_grid(~year) +
+  theme(legend.position = "bottom")
+```
 
 ## Problem 3
+```{r}
+accel_data = read_csv('./data/accel_data.csv')
+accel_data
+```
