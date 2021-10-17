@@ -1,0 +1,74 @@
+---
+title: "p8105_hw3_hw2851"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library("tidyverse")
+library(p8105.datasets)
+data("instacart")
+```
+
+## Problem 1
+```{r}
+instacart
+```
+
+Let's first get an overview of the dataset. The instacart dataset has `r nrow(instacart)` rows. It contains `r length(instacart)` columns: `r colnames(instacart)`. Here is the first row of the dataset: `r head(instacart, n=1)`. Here is the last row of the dataset: `r tail(instacart, n=1)`. The table below shows some statistics of the key variables: the number of orders, the number of products, average number of products added to an order, the number of aisles and the number of departments.
+
+```{r}
+instacart %>%
+  summarize(
+    n_order_id = n_distinct(order_id),
+    n_product_id = n_distinct(product_id),
+    avg_add_to_cart_order = mean(add_to_cart_order),
+    n_aisle_id = n_distinct(aisle),
+    n_department = n_distinct(department_id),
+  ) %>%
+  knitr::kable()
+```
+* How many aisles are there, and which aisles are the most items ordered from?
+There are `r n_distinct(instacart$aisle)` aisles. The aisles which the most orders are:
+```{r}
+instacart %>%
+  count(aisle, name='n_orders') %>%
+  arrange(desc(n_orders)) %>%
+  filter(min_rank(desc(n_orders)) < 10) %>%
+  knitr::kable()
+```
+```{r}
+instacart_popular_aisles =
+instacart %>%
+  count(aisle, name='n_orders') %>%
+  filter(n_orders > 10000)
+
+ggplot(instacart_popular_aisles, aes(x = reorder(aisle, n_orders), y = n_orders)) +
+  coord_flip() +
+  geom_col(position = "dodge") +
+  labs(
+    title = "Number of orders for aisles with > 10k orders",
+    x = "Aisle",
+    y = "Number of orders"
+  )
+```
+The plot above shows the number of orders for each aisle that have more than 10000 items ordered.
+There are `r nrow(instacart_popular_aisles)` aisles with more than 10,000 orders. The aisles with the most numbers of orders are fresh vegetable and fresh fruits. They have more than 15k orders and excessively over other aisles.
+```{r}
+instacart %>%
+  filter(aisle == c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>%
+  count(aisle, product_name, name="n_orders") %>%
+  group_by(aisle) %>%
+  filter(rank(desc(n_orders)) <= 3.0) %>%
+  arrange(aisle, n_orders)
+```
+```{r}
+instacart %>%
+  filter(product_name == c("Pink Lady Apples", "Coffee Ice Cream")) %>%
+  group_by(product_name, order_dow) %>%
+  summarize(mean_order_hour_of_day = mean(order_hour_of_day, digit=2)) %>%
+  pivot_wider(names_from=order_dow, values_from=mean_order_hour_of_day) %>%
+  knitr::kable(digits = 1)
+```
+## Problem 2
+
+## Problem 3
