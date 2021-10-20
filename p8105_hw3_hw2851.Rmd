@@ -130,17 +130,19 @@ brfss_smart2010_clean %>%
 ## Problem 3
 
 ```{r}
-accel_data = read_csv('./data/accel_data.csv') %>%
-  mutate(is_weekend = (day == c("Saturday", "Sunday"))) %>%
+accel_data = read_csv('./data/accel_data.csv')%>%
+  mutate(is_weekend = (day %in% c("Saturday", "Sunday"))) %>%
   pivot_longer(activity.1:activity.1440, names_to = "minute_of_day", names_prefix = "activity.", values_to = "activity_count")
+  
 ```
+There are 6 variables exist,including` colnames(accel_data)`, and total`r nrow(accel_data)` observations. Here is the first observation of the dataset: `r head(accel_data, n=1)`.
 ```{r}
 accel_data %>%
   group_by(day_id) %>%
   summarize(total_activity = sum(activity_count)) %>%
   knitr::kable()
 ```
-
+There is no any trends apparent was oberved in this table. The activities looks stable from the begining to the end.There are two outliner in this dataset, they are data from day24 and day31. It should be excluded during anylysis.
 ```{r}
 accel_data %>%
   group_by(day_id, day) %>%
@@ -149,3 +151,4 @@ accel_data %>%
   geom_point(aes(color = day)) +
   geom_line(alpha = .5)
 ```
+This person's activities shows weekly  periodic, for example, the total activities on every Tuesday approximately the same.This phenomenon is more obvious during weekday. The total activities on weekends fluctuate more,like the first Saturday is 631k, and the second Saturday drops to 422k. 
