@@ -32,7 +32,7 @@ How many aisles are there, and which aisles are the most items ordered from?
 
 There are `r n_distinct(instacart$aisle)` aisles.  The aisles which the most orders are:
 ```{r message=FALSE}
-instacart_top_10_aisle = instacart %>%
+instacart %>%
   count(aisle, name='n_orders') %>%
   filter(min_rank(desc(n_orders)) < 10) %>%
   arrange(desc(n_orders)) %>%
