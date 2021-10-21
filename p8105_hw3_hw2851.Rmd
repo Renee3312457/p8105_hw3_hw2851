@@ -136,8 +136,8 @@ brfss_smart2010_clean %>%
 ```{r message=FALSE}
 accel_data = read_csv('./data/accel_data.csv')%>%
   mutate(is_weekend = (day %in% c("Saturday", "Sunday"))) %>%
-  pivot_longer(activity.1:activity.1440, names_to = "minute_of_day", names_prefix = "activity.", values_to = "activity_count")
-  
+  pivot_longer(activity.1:activity.1440, names_to = "minute_of_day", names_prefix = "activity.", values_to = "activity_count") %>%
+  mutate(minute_of_day = as.integer(minute_of_day))
 ```
 There are 6 variables exist,including` colnames(accel_data)`, and total`r nrow(accel_data)` observations. Here is the first observation of the dataset: `r head(accel_data, n=1)`.
 ```{r message=FALSE}
@@ -147,14 +147,27 @@ accel_data %>%
   knitr::kable()
 ```
 
-There is no any trends apparent was observed in this table. The activities looks stable from the begining to the end.There are two outlier in this dataset, they are data from day24 and day31. It should be excluded during analysis.
+There is no any trends apparent was observed in this table. The activities looks stable from the begining to the end. There are two outliers in this dataset, they are data from day 24 and day 31. They should be excluded during analysis.
+
 ```{r message=FALSE}
 accel_data %>%
-  group_by(day_id, day) %>%
-  summarize(total_activity = sum(activity_count)) %>%
-  ggplot(aes(x = day_id, y = total_activity)) +
-  geom_point(aes(color = day)) +
-  geom_line(alpha = .5)
+  mutate(hour = ( minute_of_day - 1) %/% 60) %>%
+  group_by(day_id, day, hour) %>%
+  # get per hour activity
+  summarize(hour_activity = sum(activity_count) ) %>%
+  group_by(day, hour) %>%
+  # get average per hour activity by day of week
+  summarize(mean_hour_activity = mean(hour_activity) ) %>%
+  ggplot(aes(x = hour, y = mean_hour_activity, color = day)) +
+  geom_smooth(se = FALSE) +
+  labs(
+    title = "Average hourly activity count, grouped by day of the week",
+    x = "Hour",
+    y = "Activity count in the hour"
+  )
 ```
 
-This person's activities shows weekly  periodic, for example, the total activities on every Tuesday approximately the same.This phenomenon is more obvious during weekday. The total activities on weekends fluctuate more,like the first Saturday is 631k, and the second Saturday drops to 422k. 
+This person have a lower activity at the morning and the night, in the hour 0, the mean of activities nearly at 0, as the time goes by, the mean of activities keep increasing and achieve the maximum in the afternoon and then then decreasing. There is one exception, the mean of the activity of Friday increases until hour 11 and then decreases for two hours , then keep increasing until hour 20.
+
+
+
